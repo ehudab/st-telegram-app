@@ -17,6 +17,7 @@ interface OccupiedRoom {
 }
 
 interface DashboardData {
+  date: string;
   occupancy: {
     total: number;
     occupied: number;
@@ -33,6 +34,7 @@ interface DashboardData {
     check_outs: { guest_name: string; apartments: ApartmentInfo }[];
   };
   revenue: {
+    currency: string;
     revenue: number;
     refunds: number;
     charges: number;
@@ -40,27 +42,34 @@ interface DashboardData {
   };
 }
 
+// Nested response wrapper to match your backend worker's output schema
+interface DashboardResponse {
+  user: {
+    id: number;
+    first_name: string;
+  };
+  dashboard: DashboardData;
+}
+
 export default function Home() {
-  // FIX 1: Initialize empty to completely avoid Server vs Client Hydration Mismatch
   const [date, setDate] = useState("");
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
-    // Set the date strictly on the client after mounting
     setDate(new Date().toISOString().split('T')[0]);
   }, []);
 
   useEffect(() => {
-    if (!date) return; // Wait until client-side date initialization is done
+    if (!date) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await authenticatedFetch(`/api/dashboard?date=${date}`);
         const data = await res.json();
-        setDashboardData(data as any);
+        setDashboardData(data as DashboardResponse);
       } catch (err: any) {
         if (err.message === "ACCESS_DENIED") {
           setAccessDenied(true);
@@ -74,8 +83,6 @@ export default function Home() {
     fetchData();
   }, [date]);
 
-
-  // Auth Guard: Access Denied State
   if (accessDenied) {
     return (
       <div className="text-white p-10 text-center min-h-screen flex items-center justify-center bg-[#0a0a0a]">
@@ -84,7 +91,6 @@ export default function Home() {
     );
   }
 
-  // Loading State
   if (loading || !date) {
     return (
       <div className="text-white p-4 min-h-screen bg-[#0a0a0a] flex items-center justify-center">
@@ -93,14 +99,15 @@ export default function Home() {
     );
   }
 
-  // FIX 2: Safe structural verification of deep properties to prevent a rendering crash
+  // Safe validation pointing to the nested dashboard structure
   const isDataValid =
     dashboardData &&
-    dashboardData.occupancy &&
-    dashboardData.check_ins?.check_ins &&
-    dashboardData.check_outs?.check_outs &&
-    dashboardData.occupied_rooms &&
-    dashboardData.revenue;
+    dashboardData.dashboard &&
+    dashboardData.dashboard.occupancy &&
+    dashboardData.dashboard.check_ins?.check_ins &&
+    dashboardData.dashboard.check_outs?.check_outs &&
+    dashboardData.dashboard.occupied_rooms &&
+    dashboardData.dashboard.revenue;
 
   if (!isDataValid) {
     return (
@@ -108,9 +115,9 @@ export default function Home() {
         <div className="text-zinc-400 p-5 border border-white/5 bg-[#131315] rounded-2xl mt-5">
           <p className="text-sm font-semibold text-white mb-2">Data Schema Mismatch</p>
           <p className="text-xs text-zinc-500 mb-4">
-            Here is the raw data your backend sent. Copy and paste this back to the chat so we can fix the keys:
+            The server structural wrapper was read, but fields inner properties are incomplete.
           </p>
-          <pre className="text-[11px] bg-black/40 p-3 rounded-lg overflow-x-auto font-mono text-emerald-400 max-h-[300px] overflow-y-auto whitespace-pre-wrap">
+          <pre className="text-[11px] bg-black/40 p-3 rounded-lg overflow-x-auto font-mono text-emerald-400 max-h-[200px] overflow-y-auto">
             {JSON.stringify(dashboardData, null, 2)}
           </pre>
         </div>
@@ -118,6 +125,9 @@ export default function Home() {
       </main>
     );
   }
+
+  // Extract the dashboard data cleanly so layout bindings function immediately
+  const data = dashboardData.dashboard;
 
   return (
     <main className="max-w-md mx-auto min-h-screen bg-[#0a0a0a] p-4 font-sans space-y-4 pb-10">
@@ -137,15 +147,15 @@ export default function Home() {
       {/* Grid Card */}
       <div className="bg-[#131315] border border-white/5 rounded-2xl p-5 space-y-5">
         <div className="flex justify-between items-center text-[10px] font-bold tracking-widest uppercase">
-          <span className="text-zinc-500">Units · {dashboardData.occupancy.total}</span>
-          <span className="text-[#dfa553]">{dashboardData.occupancy.rate}% Full</span>
+          <span className="text-zinc-500">Units · {data.occupancy.total}</span>
+          <span className="text-[#dfa553]">{data.occupancy.rate}% Full</span>
         </div>
 
         <div className="grid grid-cols-8 gap-1.5">
-          {Array.from({ length: dashboardData.occupancy.total }).map((_, i) => (
+          {Array.from({ length: data.occupancy.total }).map((_, i) => (
             <div
               key={i}
-              className={`aspect-square rounded-[3px] ${i < dashboardData.occupancy.occupied ? "bg-[#dfa553]" : "border border-white/10 bg-transparent"}`}
+              className={`aspect-square rounded-[3px] ${i < data.occupancy.occupied ? "bg-[#dfa553]" : "border border-white/10 bg-transparent"}`}
             />
           ))}
         </div>
@@ -153,11 +163,11 @@ export default function Home() {
         <div className="flex space-x-6 text-xs text-zinc-400 font-medium">
           <div className="flex items-center space-x-2">
             <div className="w-2.5 h-2.5 rounded-[2px] bg-[#dfa553]"></div>
-            <span>Occupied {dashboardData.occupancy.occupied}</span>
+            <span>Occupied {data.occupancy.occupied}</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2.5 h-2.5 rounded-[2px] border border-white/10"></div>
-            <span>Available {dashboardData.occupancy.available}</span>
+            <span>Available {data.occupancy.available}</span>
           </div>
         </div>
       </div>
@@ -165,38 +175,42 @@ export default function Home() {
       {/* Today's Activity */}
       <div className="bg-[#131315] border border-white/5 rounded-2xl p-5 space-y-5">
         <h2 className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Today's Activity</h2>
-        <div className="space-y-5 divide-y divide-white/5">
-          {dashboardData.check_ins.check_ins.map((item, i) => (
-            <div key={`in-${i}`} className="flex justify-between items-center pt-2 first:pt-0">
-              <div className="flex border-l-[3px] border-[#53c97f] pl-3.5 flex-col">
-                <span className="text-sm font-bold text-white tracking-wide">{item.guest_name}</span>
-                <span className="text-xs text-zinc-500 mt-0.5">Floor {item.apartments.floor} · Type {item.apartments.type}</span>
+        {data.check_ins.total === 0 && data.check_outs.total === 0 ? (
+          <div className="text-xs text-zinc-500 italic text-center py-2">No activity schedules for today</div>
+        ) : (
+          <div className="space-y-5 divide-y divide-white/5">
+            {data.check_ins.check_ins.map((item, i) => (
+              <div key={`in-${i}`} className="flex justify-between items-center pt-2 first:pt-0">
+                <div className="flex border-l-[3px] border-[#53c97f] pl-3.5 flex-col">
+                  <span className="text-sm font-bold text-white tracking-wide">{item.guest_name}</span>
+                  <span className="text-xs text-zinc-500 mt-0.5">Floor {item.apartments.floor} · Type {item.apartments.type}</span>
+                </div>
+                <span className="text-[9px] font-bold tracking-widest text-[#53c97f] uppercase">Check-in</span>
               </div>
-              <span className="text-[9px] font-bold tracking-widest text-[#53c97f] uppercase">Check-in</span>
-            </div>
-          ))}
-          {dashboardData.check_outs.check_outs.map((item, i) => (
-            <div key={`out-${i}`} className="flex justify-between items-center pt-2 first:pt-0">
-              <div className="flex border-l-[3px] border-[#eb6f62] pl-3.5 flex-col">
-                <span className="text-sm font-bold text-white tracking-wide">{item.guest_name}</span>
-                <span className="text-xs text-zinc-500 mt-0.5">Floor {item.apartments.floor} · Type {item.apartments.type}</span>
+            ))}
+            {data.check_outs.check_outs.map((item, i) => (
+              <div key={`out-${i}`} className="flex justify-between items-center pt-2 first:pt-0">
+                <div className="flex border-l-[3px] border-[#eb6f62] pl-3.5 flex-col">
+                  <span className="text-sm font-bold text-white tracking-wide">{item.guest_name}</span>
+                  <span className="text-xs text-zinc-500 mt-0.5">Floor {item.apartments.floor} · Type {item.apartments.type}</span>
+                </div>
+                <span className="text-[9px] font-bold tracking-widest text-[#eb6f62] uppercase">Departure</span>
               </div>
-              <span className="text-[9px] font-bold tracking-widest text-[#eb6f62] uppercase">Departure</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Active Tenancies Card */}
       <div className="bg-[#131315] border border-white/5 rounded-2xl p-5 space-y-4">
-        <h2 className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Active Tenancies</h2>
+        <h2 className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Active Tenancies ({data.occupied_rooms.length})</h2>
         <div className="flex overflow-x-auto space-x-3 pb-2 scrollbar-hide">
-          {dashboardData.occupied_rooms.map((room, i) => (
+          {data.occupied_rooms.map((room, i) => (
             <div key={i} className="min-w-[150px] bg-[#1a1a1c] border border-white/5 p-4 rounded-xl shrink-0">
               <div className="text-sm font-bold text-white truncate">{room.guest_name}</div>
               <div className="text-xs text-zinc-400 mt-1">Floor {room.apartments.floor} · Type {room.apartments.type}</div>
               <div className="text-[10px] text-[#dfa553] mt-3 font-medium uppercase tracking-wider">
-                {room.apartments.bedrooms} Bedrooms
+                {room.apartments.bedrooms || 0} Bedrooms
               </div>
             </div>
           ))}
@@ -205,23 +219,23 @@ export default function Home() {
 
       {/* Revenue Card */}
       <div className="bg-[#131315] border border-white/5 rounded-2xl p-5 space-y-5">
-        <h2 className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Revenue · ETB</h2>
+        <h2 className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Revenue · {data.revenue.currency || "ETB"}</h2>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between text-zinc-400">
             <span>Gross Revenue</span>
-            <span className="font-mono text-white">{dashboardData.revenue.revenue.toLocaleString()}</span>
+            <span className="font-mono text-white">{data.revenue.revenue.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-zinc-400">
             <span>Refunds</span>
-            <span className="font-mono text-white">{dashboardData.revenue.refunds.toLocaleString()}</span>
+            <span className="font-mono text-white">{data.revenue.refunds.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-zinc-400">
             <span>Charges</span>
-            <span className="font-mono text-white">{dashboardData.revenue.charges.toLocaleString()}</span>
+            <span className="font-mono text-white">{data.revenue.charges.toLocaleString()}</span>
           </div>
           <div className="flex justify-between pt-3 border-t border-white/5 font-bold text-base">
             <span className="text-white">Net Income</span>
-            <span className="font-mono text-[#dfa553]">{dashboardData.revenue.net_income.toLocaleString()}</span>
+            <span className="font-mono text-[#dfa553]">{data.revenue.net_income.toLocaleString()}</span>
           </div>
         </div>
       </div>
