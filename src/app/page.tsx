@@ -4,6 +4,18 @@ import { useEffect } from "react";
 import DashboardSection from "@/components/DashboardSection";
 import ChatSection from "@/components/ChatSection";
 
+// Explicitly tell the TypeScript compiler that the Telegram object exists on window
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: {
+        ready: () => void;
+        expand: () => void;
+      };
+    };
+  }
+}
+
 export default function Home() {
   useEffect(() => {
     if (typeof window !== "undefined" && window.Telegram?.WebApp) {
