@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import ChatCard from "../components/ChatCard";
-import { authenticatedFetch } from "../lib/api"; // Helper imported
+import { authenticatedFetch } from "../lib/api";
 
-// Define the shape of your API response
 interface ApartmentInfo {
   type: string;
   floor: number;
@@ -42,16 +41,23 @@ interface DashboardData {
 }
 
 export default function Home() {
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  // FIX 1: Initialize empty to completely avoid Server vs Client Hydration Mismatch
+  const [date, setDate] = useState("");
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [accessDenied, setAccessDenied] = useState(false); // Security state
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
+    // Set the date strictly on the client after mounting
+    setDate(new Date().toISOString().split('T')[0]);
+  }, []);
+
+  useEffect(() => {
+    if (!date) return; // Wait until client-side date initialization is done
+
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetching with authenticated helper
         const res = await authenticatedFetch(`/api/dashboard?date=${date}`);
         const data = await res.json();
         setDashboardData(data as any);
@@ -68,13 +74,46 @@ export default function Home() {
     fetchData();
   }, [date]);
 
-  // Auth Guard: Stop rendering if access is denied
+  // Auth Guard: Access Denied State
   if (accessDenied) {
-    return <div className="text-white p-10 text-center min-h-screen flex items-center justify-center">Access Denied</div>;
+    return (
+      <div className="text-white p-10 text-center min-h-screen flex items-center justify-center bg-[#0a0a0a]">
+        Access Denied
+      </div>
+    );
   }
 
-  if (loading) return <div className="text-white p-4">Authenticating...</div>;
-  if (!dashboardData) return <div className="text-white p-4">No data available for {date}.</div>;
+  // Loading State
+  if (loading || !date) {
+    return (
+      <div className="text-white p-4 min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        Authenticating...
+      </div>
+    );
+  }
+
+  // FIX 2: Safe structural verification of deep properties to prevent a rendering crash
+  const isDataValid =
+    dashboardData &&
+    dashboardData.occupancy &&
+    dashboardData.check_ins?.check_ins &&
+    dashboardData.check_outs?.check_outs &&
+    dashboardData.occupied_rooms &&
+    dashboardData.revenue;
+
+  if (!isDataValid) {
+    return (
+      <main className="max-w-md mx-auto min-h-screen bg-[#0a0a0a] p-4 font-sans space-y-4 flex flex-col justify-between pb-10">
+        <div className="text-zinc-400 p-8 text-center border border-white/5 bg-[#131315] rounded-2xl mt-10">
+          <p className="text-sm font-semibold text-white mb-1">Data Schema Mismatch</p>
+          <p className="text-xs text-zinc-500">
+            The server responded successfully, but the fields didn't match the dashboard layout.
+          </p>
+        </div>
+        <ChatCard />
+      </main>
+    );
+  }
 
   return (
     <main className="max-w-md mx-auto min-h-screen bg-[#0a0a0a] p-4 font-sans space-y-4 pb-10">
