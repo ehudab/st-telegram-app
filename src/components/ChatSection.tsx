@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp, Sparkles } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
 interface Message {
     id: string;
     sender: "user" | "assistant";
     text: string;
+}
+
+function timeNow() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
 export default function ChatSection() {
@@ -62,61 +66,55 @@ export default function ChatSection() {
     };
 
     return (
-        <div className="rounded-3xl flex flex-col h-full overflow-hidden bg-[#1c1c24]">
+        <div className="rounded-2xl flex flex-col h-full overflow-hidden bg-[var(--panel)] border border-[var(--line)]">
             {/* Header */}
-            <div className="px-4 py-3 flex items-center gap-2 border-b border-white/5">
-                <div className="w-7 h-7 rounded-full bg-[#8783f5] flex items-center justify-center shrink-0">
-                    <Sparkles className="w-3.5 h-3.5 text-black" strokeWidth={2.5} />
+            <div className="px-4 py-3 flex items-center gap-2 border-b border-[var(--line)]">
+                <div className="w-6 h-6 rounded-[6px] bg-[var(--brass-dim)] flex items-center justify-center shrink-0">
+                    <span className="font-mono text-[9px] font-bold text-[var(--brass)]">AI</span>
                 </div>
-                <span className="text-xs font-black">Ops Assistant</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#3fd9a4] ml-auto" />
+                <span className="font-display text-[13px] font-semibold">Ops Assistant</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--green)] ml-auto" />
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
                 {messages.map((msg) => (
-                    <div
-                        key={msg.id}
-                        className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                        <div
-                            className={`max-w-[85%] px-3.5 py-2.5 text-[13px] font-medium leading-relaxed ${msg.sender === "user"
-                                ? "bg-[#8783f5] text-black rounded-2xl rounded-br-md"
-                                : "bg-[#26262f] text-white rounded-2xl rounded-bl-md"
-                                }`}
-                        >
-                            {msg.text}
-                        </div>
+                    <div key={msg.id} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
+                        {msg.sender === "user" ? (
+                            <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-br-md bg-[var(--brass)] text-[#1a1409] text-[13px] font-medium leading-relaxed">
+                                {msg.text}
+                            </div>
+                        ) : (
+                            <div className="max-w-[85%] pl-3 border-l-2 border-[var(--brass-dim)] text-[13px] font-medium leading-relaxed text-[var(--text)]">
+                                {msg.text}
+                            </div>
+                        )}
+                        <span className="font-mono text-[9px] text-[var(--muted)] mt-1 px-0.5">{timeNow()}</span>
                     </div>
                 ))}
                 {loading && (
-                    <div className="flex justify-start">
-                        <div className="bg-[#26262f] rounded-2xl rounded-bl-md px-3.5 py-2.5">
-                            <span className="text-[11px] font-semibold text-[#9696a3] animate-soft-pulse">Thinking…</span>
-                        </div>
+                    <div className="pl-3 border-l-2 border-[var(--brass-dim)]">
+                        <span className="font-mono text-[11px] text-[var(--muted)] animate-soft-pulse">thinking…</span>
                     </div>
                 )}
                 <div ref={chatEndRef} />
             </div>
 
             {/* Input */}
-            <form
-                onSubmit={handleSend}
-                className="p-2.5 flex items-center gap-2"
-            >
-                <div className="flex-1 flex items-center bg-[#26262f] rounded-full px-4 py-2.5">
+            <form onSubmit={handleSend} className="p-2.5 flex items-center gap-2 border-t border-[var(--line)]">
+                <div className="flex-1 flex items-center border border-[var(--line)] rounded-full px-4 py-2.5">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Ask something to start"
-                        className="flex-1 bg-transparent text-white text-[13px] font-medium focus:outline-none placeholder:text-[#9696a3]"
+                        className="flex-1 bg-transparent text-[13px] font-medium focus:outline-none placeholder:text-[var(--muted)]"
                     />
                 </div>
                 <button
                     type="submit"
                     disabled={!input.trim() || loading}
-                    className="w-10 h-10 shrink-0 rounded-full bg-[#8783f5] disabled:opacity-30 disabled:pointer-events-none text-black flex items-center justify-center"
+                    className="w-10 h-10 shrink-0 rounded-full bg-[var(--brass)] disabled:opacity-30 disabled:pointer-events-none text-[#1a1409] flex items-center justify-center"
                 >
                     <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
                 </button>

@@ -25,7 +25,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="max-w-md mx-auto min-h-screen flex flex-col bg-[var(--tg-theme-secondary-bg-color,#0a0a0d)] p-3 gap-3">
+    <main className="max-w-md mx-auto min-h-screen flex flex-col bg-[var(--tg-theme-secondary-bg-color,var(--ink))] p-3 gap-3">
       {/* Dashboard */}
       <div className="flex-1 overflow-y-auto scrollbar-hide pr-0.5">
         <DashboardSection />

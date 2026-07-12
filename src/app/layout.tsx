@@ -21,7 +21,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body className="antialiased select-none min-h-screen bg-[var(--tg-theme-secondary-bg-color,#0a0a0d)] text-[var(--tg-theme-text-color,#ffffff)]">
+      <body className="antialiased select-none min-h-screen bg-[var(--tg-theme-secondary-bg-color,#0b0c0f)] text-[var(--tg-theme-text-color,#f4f1ea)]">
         {children}
       </body>
     </html>
