@@ -136,7 +136,7 @@ export default function Home() {
       <div className="flex justify-between items-center px-1 mb-2">
         <div className="flex items-center space-x-2.5">
           <div className="w-2 h-2 rounded-full bg-[#53c97f]"></div>
-          <h1 className="text-base font-bold tracking-wide">Apartment Core</h1>
+          <h1 className="text-base font-bold tracking-wide">Apartment Snapshot</h1>
         </div>
         <div className="flex items-center space-x-1.5 bg-transparent border border-white/10 rounded-full px-3 py-1.5">
           <span className="text-xs text-zinc-400 font-medium tracking-wider">{date}</span>

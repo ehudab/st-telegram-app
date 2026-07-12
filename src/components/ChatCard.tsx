@@ -74,7 +74,7 @@ export default function ChatCard() {
             <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-3">
                     <div className="bg-[#202022] px-2 py-1 rounded text-[10px] font-bold text-zinc-400">AI</div>
-                    <h2 className="text-sm font-bold text-white tracking-wide">Ops Assistant</h2>
+                    <h2 className="text-sm font-bold text-white tracking-wide">Stadium AI Assistant</h2>
                 </div>
                 <div className="w-1.5 h-1.5 rounded-full bg-[#53c97f]"></div>
             </div>
