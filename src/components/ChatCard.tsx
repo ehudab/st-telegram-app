@@ -1,5 +1,5 @@
 "use client";
-
+import ReactMarkdown from 'react-markdown';
 import React, { useState } from "react";
 import { ArrowUp } from "lucide-react";
 
@@ -77,7 +77,9 @@ export default function ChatCard() {
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                         <div className={`text-[13px] font-medium leading-relaxed ${msg.sender === 'user' ? 'text-zinc-300 text-right' : 'text-white border-l-2 border-white/10 pl-3'}`}>
-                            {msg.text}
+                            <ReactMarkdown>
+                                {msg.text}
+                            </ReactMarkdown>
                         </div>
                         <span className="text-[10px] text-zinc-600 font-mono mt-2">{msg.time}</span>
                     </div>
