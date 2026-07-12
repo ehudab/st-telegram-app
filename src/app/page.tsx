@@ -88,6 +88,7 @@ export default function Home() {
           <span className="text-[#dfa553]">{dashboardData.occupancy.rate}% Full</span>
         </div>
 
+
         <div className="grid grid-cols-8 gap-1.5">
           {Array.from({ length: dashboardData.occupancy.total }).map((_, i) => (
             <div
