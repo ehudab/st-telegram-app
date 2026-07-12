@@ -1,72 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --ink: #0b0c0f;
-  --panel: #16171b;
-  --panel-raised: #1f2025;
-  --line: rgba(244, 241, 234, 0.08);
-  --text: #f4f1ea;
-  --muted: #86868f;
-  --brass: #d4a054;
-  --brass-dim: rgba(212, 160, 84, 0.14);
-  --green: #6fcf97;
-  --green-dim: rgba(111, 207, 151, 0.14);
-  --rust: #e2725b;
-  --rust-dim: rgba(226, 114, 91, 0.14);
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
+  --bg-main: #0a0a0a;
+  --bg-card: #141416;
+  --text-main: #ffffff;
+  --text-muted: #71717a;
+  /* zinc-500 */
 }
 
 body {
-  background-color: var(--tg-theme-secondary-bg-color, var(--ink));
-  color: var(--tg-theme-text-color, var(--text));
-  font-family: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background-color: var(--tg-theme-bg-color, var(--bg-main));
+  color: var(--tg-theme-text-color, var(--text-main));
+  -webkit-font-smoothing: antialiased;
 }
 
-.font-display {
-  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-}
-
-.font-mono {
-  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-feature-settings: "tnum" 1;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
+/* Hide scrollbars for a clean mobile app feel */
+.custom-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-.scrollbar-hide {
+.custom-scrollbar {
   -ms-overflow-style: none;
+  /* IE and Edge */
   scrollbar-width: none;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--line);
-  border-radius: 4px;
-}
-
-@keyframes soft-pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.35;
-  }
-}
-
-.animate-soft-pulse {
-  animation: soft-pulse 1.6s ease-in-out infinite;
+  /* Firefox */
 }

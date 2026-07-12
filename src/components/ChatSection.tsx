@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 
 interface Message {
     id: string;
@@ -9,16 +9,12 @@ interface Message {
     text: string;
 }
 
-function timeNow() {
-    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-}
-
 export default function ChatSection() {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "welcome",
             sender: "assistant",
-            text: "Hi! Ask me about room metrics, dates, or occupancy — plain English works fine.",
+            text: "Hello. You can ask me anything about apartment availability, revenue, or daily schedules.",
         },
     ]);
     const [input, setInput] = useState("");
@@ -51,14 +47,11 @@ export default function ChatSection() {
             setMessages((prev) => [...prev, {
                 id: crypto.randomUUID(),
                 sender: "assistant",
-                text: data.response || "Sorry, I didn't get a response back — try again.",
+                text: data.response || "No response generated.",
             }]);
         } catch (error) {
-            console.error("Chat sync crash", error);
             setMessages((prev) => [...prev, {
-                id: crypto.randomUUID(),
-                sender: "assistant",
-                text: "Couldn't reach the server. Check your connection and try again."
+                id: crypto.randomUUID(), sender: "assistant", text: "Connection error."
             }]);
         } finally {
             setLoading(false);
@@ -66,58 +59,54 @@ export default function ChatSection() {
     };
 
     return (
-        <div className="rounded-2xl flex flex-col h-full overflow-hidden bg-[var(--panel)] border border-[var(--line)]">
-            {/* Header */}
-            <div className="px-4 py-3 flex items-center gap-2 border-b border-[var(--line)]">
-                <div className="w-6 h-6 rounded-[6px] bg-[var(--brass-dim)] flex items-center justify-center shrink-0">
-                    <span className="font-mono text-[9px] font-bold text-[var(--brass)]">AI</span>
-                </div>
-                <span className="font-display text-[13px] font-semibold">Ops Assistant</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--green)] ml-auto" />
+        <div className="flex flex-col h-full bg-[#141416]">
+            {/* Chat Header */}
+            <div className="px-4 py-3 border-b border-white/5 flex items-center space-x-2">
+                <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+                <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">AI Assistant</span>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+            {/* Chat History */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                 {messages.map((msg) => (
-                    <div key={msg.id} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
-                        {msg.sender === "user" ? (
-                            <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-br-md bg-[var(--brass)] text-[#1a1409] text-[13px] font-medium leading-relaxed">
-                                {msg.text}
-                            </div>
-                        ) : (
-                            <div className="max-w-[85%] pl-3 border-l-2 border-[var(--brass-dim)] text-[13px] font-medium leading-relaxed text-[var(--text)]">
-                                {msg.text}
-                            </div>
-                        )}
-                        <span className="font-mono text-[9px] text-[var(--muted)] mt-1 px-0.5">{timeNow()}</span>
+                    <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+                        <div className={`max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed rounded-2xl ${msg.sender === "user"
+                                ? "bg-white text-black rounded-tr-sm"
+                                : "bg-zinc-900 text-zinc-200 border border-white/5 rounded-tl-sm"
+                            }`}
+                        >
+                            {msg.text}
+                        </div>
                     </div>
                 ))}
                 {loading && (
-                    <div className="pl-3 border-l-2 border-[var(--brass-dim)]">
-                        <span className="font-mono text-[11px] text-[var(--muted)] animate-soft-pulse">thinking…</span>
+                    <div className="flex justify-start">
+                        <div className="bg-zinc-900 border border-white/5 text-zinc-500 text-[13px] rounded-2xl rounded-tl-sm px-4 py-2.5 animate-pulse">
+                            Thinking...
+                        </div>
                     </div>
                 )}
                 <div ref={chatEndRef} />
             </div>
 
-            {/* Input */}
-            <form onSubmit={handleSend} className="p-2.5 flex items-center gap-2 border-t border-[var(--line)]">
-                <div className="flex-1 flex items-center border border-[var(--line)] rounded-full px-4 py-2.5">
+            {/* Input Area */}
+            <form onSubmit={handleSend} className="p-3 border-t border-white/5">
+                <div className="relative flex items-center">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask something to start"
-                        className="flex-1 bg-transparent text-[13px] font-medium focus:outline-none placeholder:text-[var(--muted)]"
+                        placeholder="Ask a question..."
+                        className="flex-1 bg-zinc-900 text-white text-sm border border-white/10 rounded-full pl-4 pr-10 py-2.5 focus:outline-none focus:border-zinc-500 transition-colors placeholder:text-zinc-600"
                     />
+                    <button
+                        type="submit"
+                        disabled={!input.trim() || loading}
+                        className="absolute right-1.5 p-1.5 bg-white text-black disabled:opacity-50 rounded-full"
+                    >
+                        <Send className="w-4 h-4" />
+                    </button>
                 </div>
-                <button
-                    type="submit"
-                    disabled={!input.trim() || loading}
-                    className="w-10 h-10 shrink-0 rounded-full bg-[var(--brass)] disabled:opacity-30 disabled:pointer-events-none text-[#1a1409] flex items-center justify-center"
-                >
-                    <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
-                </button>
             </form>
         </div>
     );

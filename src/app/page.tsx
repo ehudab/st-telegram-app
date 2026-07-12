@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import DashboardSection from "@/components/DashboardSection";
 import ChatSection from "@/components/ChatSection";
 
-// Explicitly tell the TypeScript compiler that the Telegram object exists on window
 declare global {
   interface Window {
     Telegram?: {
@@ -25,14 +24,14 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="max-w-md mx-auto min-h-screen flex flex-col bg-[var(--tg-theme-secondary-bg-color,var(--ink))] p-3 gap-3">
-      {/* Dashboard */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide pr-0.5">
+    <main className="max-w-md mx-auto h-screen flex flex-col bg-[#0a0a0a] p-3 text-white">
+      {/* Dashboard Top Half */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
         <DashboardSection />
       </div>
 
-      {/* Chat */}
-      <div className="h-[400px] shrink-0 flex flex-col">
+      {/* Chat Interface Bottom Half */}
+      <div className="h-[35%] min-h-[300px] flex flex-col mt-2 rounded-[20px] overflow-hidden bg-[#141416] border border-white/5">
         <ChatSection />
       </div>
     </main>
