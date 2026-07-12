@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import ChatCard from "../components/ChatCard";
+import { authenticatedFetch } from "../lib/api"; // Helper imported
 
 // Define the shape of your API response
 interface ApartmentInfo {
@@ -44,18 +45,22 @@ export default function Home() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false); // Security state
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        // Fetching with dynamic date parameter
-        const res = await fetch(`${baseUrl}/api/dashboard?date=${date}`);
+        // Fetching with authenticated helper
+        const res = await authenticatedFetch(`/api/dashboard?date=${date}`);
         const data = await res.json();
         setDashboardData(data as any);
-      } catch (err) {
-        console.error("Failed to fetch dashboard:", err);
+      } catch (err: any) {
+        if (err.message === "ACCESS_DENIED") {
+          setAccessDenied(true);
+        } else {
+          console.error("Failed to fetch dashboard:", err);
+        }
       } finally {
         setLoading(false);
       }
@@ -63,7 +68,12 @@ export default function Home() {
     fetchData();
   }, [date]);
 
-  if (loading) return <div className="text-white p-4">Loading dashboard...</div>;
+  // Auth Guard: Stop rendering if access is denied
+  if (accessDenied) {
+    return <div className="text-white p-10 text-center min-h-screen flex items-center justify-center">Access Denied</div>;
+  }
+
+  if (loading) return <div className="text-white p-4">Authenticating...</div>;
   if (!dashboardData) return <div className="text-white p-4">No data available for {date}.</div>;
 
   return (
@@ -88,7 +98,6 @@ export default function Home() {
           <span className="text-[#dfa553]">{dashboardData.occupancy.rate}% Full</span>
         </div>
 
-
         <div className="grid grid-cols-8 gap-1.5">
           {Array.from({ length: dashboardData.occupancy.total }).map((_, i) => (
             <div
@@ -110,11 +119,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Today's Activity (Check-ins & Check-outs) */}
+      {/* Today's Activity */}
       <div className="bg-[#131315] border border-white/5 rounded-2xl p-5 space-y-5">
         <h2 className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Today's Activity</h2>
         <div className="space-y-5 divide-y divide-white/5">
-          {/* Check-ins */}
           {dashboardData.check_ins.check_ins.map((item, i) => (
             <div key={`in-${i}`} className="flex justify-between items-center pt-2 first:pt-0">
               <div className="flex border-l-[3px] border-[#53c97f] pl-3.5 flex-col">
@@ -124,7 +132,6 @@ export default function Home() {
               <span className="text-[9px] font-bold tracking-widest text-[#53c97f] uppercase">Check-in</span>
             </div>
           ))}
-          {/* Check-outs */}
           {dashboardData.check_outs.check_outs.map((item, i) => (
             <div key={`out-${i}`} className="flex justify-between items-center pt-2 first:pt-0">
               <div className="flex border-l-[3px] border-[#eb6f62] pl-3.5 flex-col">
@@ -140,18 +147,11 @@ export default function Home() {
       {/* Active Tenancies Card */}
       <div className="bg-[#131315] border border-white/5 rounded-2xl p-5 space-y-4">
         <h2 className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Active Tenancies</h2>
-
-        {/* Horizontal Scroll Container */}
         <div className="flex overflow-x-auto space-x-3 pb-2 scrollbar-hide">
           {dashboardData.occupied_rooms.map((room, i) => (
-            <div
-              key={i}
-              className="min-w-[150px] bg-[#1a1a1c] border border-white/5 p-4 rounded-xl shrink-0"
-            >
+            <div key={i} className="min-w-[150px] bg-[#1a1a1c] border border-white/5 p-4 rounded-xl shrink-0">
               <div className="text-sm font-bold text-white truncate">{room.guest_name}</div>
-              <div className="text-xs text-zinc-400 mt-1">
-                Floor {room.apartments.floor} · Type {room.apartments.type}
-              </div>
+              <div className="text-xs text-zinc-400 mt-1">Floor {room.apartments.floor} · Type {room.apartments.type}</div>
               <div className="text-[10px] text-[#dfa553] mt-3 font-medium uppercase tracking-wider">
                 {room.apartments.bedrooms} Bedrooms
               </div>

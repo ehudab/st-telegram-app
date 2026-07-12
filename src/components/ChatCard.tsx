@@ -2,6 +2,7 @@
 import ReactMarkdown from 'react-markdown';
 import React, { useState } from "react";
 import { ArrowUp } from "lucide-react";
+import { authenticatedFetch } from "../lib/api"; // Added the helper
 
 interface Message {
     id: string;
@@ -36,11 +37,9 @@ export default function ChatCard() {
         setLoading(true);
 
         try {
-            // Endpoint call to your worker
-            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL; // Add this line
-            const response = await fetch(`${baseUrl}/api/chat`, { // Use full URL
+            // Using the secure authenticatedFetch helper
+            const response = await authenticatedFetch("/api/chat", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: userText }),
             });
             const data = await response.json();
@@ -51,9 +50,17 @@ export default function ChatCard() {
                 text: data.response || "No data available.",
                 time: timeString
             }]);
-        } catch (error) {
+        } catch (error: any) {
+            // Handle specifically for access denial or general connection errors
+            const errorMessage = error.message === "ACCESS_DENIED"
+                ? "Access denied. Please restart the app."
+                : "Connection error.";
+
             setMessages(prev => [...prev, {
-                id: crypto.randomUUID(), sender: "assistant", text: "Connection error.", time: timeString
+                id: crypto.randomUUID(),
+                sender: "assistant",
+                text: errorMessage,
+                time: timeString
             }]);
         } finally {
             setLoading(false);
@@ -77,8 +84,24 @@ export default function ChatCard() {
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                         <div className={`text-[13px] font-medium leading-relaxed ${msg.sender === 'user' ? 'text-zinc-300 text-right' : 'text-white border-l-2 border-white/10 pl-3'}`}>
-                            <ReactMarkdown>
-                                {msg.text}
+                            <ReactMarkdown
+                                components={{
+                                    // Headings (e.g., "Occupied Apartments")
+                                    h1: ({ node, ...props }) => <h1 className="text-white font-bold text-[15px] mt-4 mb-2" {...props} />,
+                                    h2: ({ node, ...props }) => <h2 className="text-white font-bold text-[14px] mt-4 mb-2" {...props} />,
+
+                                    // Bold text (the key data points)
+                                    strong: ({ node, ...props }) => <strong className="text-[#dfa553] font-bold" {...props} />,
+
+                                    // Paragraphs
+                                    p: ({ node, ...props }) => <p className="text-zinc-400 mb-2 leading-relaxed" {...props} />,
+
+                                    // Lists (for the breakdown at the end)
+                                    ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2 space-y-1" {...props} />,
+                                    li: ({ node, ...props }) => <li className="text-zinc-400 text-[13px]" {...props} />,
+                                }}
+                            >
+                                {msg.text.replace(/\n/g, '  \n')}
                             </ReactMarkdown>
                         </div>
                         <span className="text-[10px] text-zinc-600 font-mono mt-2">{msg.time}</span>
