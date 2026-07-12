@@ -37,7 +37,8 @@ export default function ChatCard() {
 
         try {
             // Endpoint call to your worker
-            const response = await fetch("/api/chat", {
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL; // Add this line
+            const response = await fetch(`${baseUrl}/api/chat`, { // Use full URL
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: userText }),

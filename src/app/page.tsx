@@ -1,17 +1,35 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import ChatCard from "../components/ChatCard";
 
 
 export default function Home() {
+
+  const [date, setDate] = useState("2026-05-22");
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (typeof window !== "undefined" && window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-    }
-  }, []);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const res = await fetch(`${baseUrl}/api/dashboard?date=${date}`);
+        const data = await res.json();
+        setDashboardData(data);
+      } catch (err) {
+        console.error("Failed to fetch dashboard:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [date]);
+
+  if (loading) return <div className="text-white p-4">Loading...</div>;
 
   return (
     <main className="max-w-md mx-auto min-h-screen bg-[#0a0a0a] p-4 font-sans space-y-4 pb-10">
