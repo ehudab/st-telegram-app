@@ -21,8 +21,13 @@ function UnitGrid({ total, occupied }: { total: number; occupied: number }) {
             {cells.map((isOccupied, i) => (
                 <div
                     key={i}
-                    className={`aspect-square rounded-[3px] ${isOccupied ? "bg-[var(--brass)]" : "bg-transparent border border-[var(--line)]"
-                        }`}
+                    className="h-6 rounded-[3px]"
+                    style={{
+                        background: isOccupied ? "var(--brass)" : "transparent",
+                        boxShadow: isOccupied
+                            ? "inset 0 0 0 1px var(--ink)"
+                            : "inset 0 0 0 1px var(--line)",
+                    }}
                 />
             ))}
         </div>
