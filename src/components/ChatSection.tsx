@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowRight, Terminal } from "lucide-react";
+import { ArrowUp, Sparkles } from "lucide-react";
 
 interface Message {
     id: string;
@@ -14,7 +14,7 @@ export default function ChatSection() {
         {
             id: "welcome",
             sender: "assistant",
-            text: "System Ready. Query room metrics, dates, or occupancy configurations via plain-text syntax command lines.",
+            text: "Hi! Ask me about room metrics, dates, or occupancy — plain English works fine.",
         },
     ]);
     const [input, setInput] = useState("");
@@ -47,14 +47,14 @@ export default function ChatSection() {
             setMessages((prev) => [...prev, {
                 id: crypto.randomUUID(),
                 sender: "assistant",
-                text: data.response || "No data response payload recognized from worker.",
+                text: data.response || "Sorry, I didn't get a response back — try again.",
             }]);
         } catch (error) {
             console.error("Chat sync crash", error);
             setMessages((prev) => [...prev, {
                 id: crypto.randomUUID(),
                 sender: "assistant",
-                text: "Error syncing with system core nodes. Check live server routing status."
+                text: "Couldn't reach the server. Check your connection and try again."
             }]);
         } finally {
             setLoading(false);
@@ -62,27 +62,27 @@ export default function ChatSection() {
     };
 
     return (
-        <div className="arcade-card flex flex-col h-full overflow-hidden bg-[var(--tg-theme-bg-color,#1a1a24)]">
-            {/* Interactive Title Tag */}
-            <div className="px-3 py-2 bg-black border-b-3 border-white text-white flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <Terminal className="w-4 h-4 text-sky-400" />
-                    <span className="text-[11px] font-black tracking-widest uppercase text-sky-400">Natural Language Terminal</span>
+        <div className="rounded-3xl flex flex-col h-full overflow-hidden bg-[#1c1c24]">
+            {/* Header */}
+            <div className="px-4 py-3 flex items-center gap-2 border-b border-white/5">
+                <div className="w-7 h-7 rounded-full bg-[#8783f5] flex items-center justify-center shrink-0">
+                    <Sparkles className="w-3.5 h-3.5 text-black" strokeWidth={2.5} />
                 </div>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-xs font-black">Ops Assistant</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3fd9a4] ml-auto" />
             </div>
 
-            {/* Main Narrative Log Output Area */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar bg-black/10">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar">
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
                         className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                     >
                         <div
-                            className={`max-w-[85%] px-3 py-2 text-xs font-bold leading-relaxed border-2 border-black ${msg.sender === "user"
-                                    ? "bg-sky-400 text-black rounded-xl rounded-tr-none shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                                    : "bg-zinc-800 text-white rounded-xl rounded-tl-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                            className={`max-w-[85%] px-3.5 py-2.5 text-[13px] font-medium leading-relaxed ${msg.sender === "user"
+                                ? "bg-[#8783f5] text-black rounded-2xl rounded-br-md"
+                                : "bg-[#26262f] text-white rounded-2xl rounded-bl-md"
                                 }`}
                         >
                             {msg.text}
@@ -91,32 +91,34 @@ export default function ChatSection() {
                 ))}
                 {loading && (
                     <div className="flex justify-start">
-                        <div className="text-[11px] font-black text-amber-400 uppercase tracking-widest animate-pulse pl-1">
-                            ⚡ Compiling System Query Matrix...
+                        <div className="bg-[#26262f] rounded-2xl rounded-bl-md px-3.5 py-2.5">
+                            <span className="text-[11px] font-semibold text-[#9696a3] animate-soft-pulse">Thinking…</span>
                         </div>
                     </div>
                 )}
                 <div ref={chatEndRef} />
             </div>
 
-            {/* Terminal Command Prompt Input Form */}
+            {/* Input */}
             <form
                 onSubmit={handleSend}
-                className="p-2.5 bg-zinc-900 border-t-3 border-white flex items-center space-x-2"
+                className="p-2.5 flex items-center gap-2"
             >
-                <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask system core anything..."
-                    className="flex-1 bg-black text-white text-xs font-bold border-2 border-zinc-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-sky-400 uppercase tracking-wide placeholder:text-zinc-600 placeholder:normal-case"
-                />
+                <div className="flex-1 flex items-center bg-[#26262f] rounded-full px-4 py-2.5">
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Ask something to start"
+                        className="flex-1 bg-transparent text-white text-[13px] font-medium focus:outline-none placeholder:text-[#9696a3]"
+                    />
+                </div>
                 <button
                     type="submit"
                     disabled={!input.trim() || loading}
-                    className="arcade-btn p-2.5 bg-sky-400 disabled:opacity-30 disabled:pointer-events-none text-black flex items-center justify-center font-black"
+                    className="w-10 h-10 shrink-0 rounded-full bg-[#8783f5] disabled:opacity-30 disabled:pointer-events-none text-black flex items-center justify-center"
                 >
-                    <ArrowRight className="w-4 h-4 stroke-[3]" />
+                    <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
                 </button>
             </form>
         </div>
