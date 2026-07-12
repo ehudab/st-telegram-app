@@ -74,6 +74,7 @@ export default function Home() {
     fetchData();
   }, [date]);
 
+
   // Auth Guard: Access Denied State
   if (accessDenied) {
     return (
@@ -103,12 +104,15 @@ export default function Home() {
 
   if (!isDataValid) {
     return (
-      <main className="max-w-md mx-auto min-h-screen bg-[#0a0a0a] p-4 font-sans space-y-4 flex flex-col justify-between pb-10">
-        <div className="text-zinc-400 p-8 text-center border border-white/5 bg-[#131315] rounded-2xl mt-10">
-          <p className="text-sm font-semibold text-white mb-1">Data Schema Mismatch</p>
-          <p className="text-xs text-zinc-500">
-            The server responded successfully, but the fields didn't match the dashboard layout.
+      <main className="max-w-md mx-auto min-h-screen bg-[#0a0a0a] p-4 font-sans space-y-4 pb-10">
+        <div className="text-zinc-400 p-5 border border-white/5 bg-[#131315] rounded-2xl mt-5">
+          <p className="text-sm font-semibold text-white mb-2">Data Schema Mismatch</p>
+          <p className="text-xs text-zinc-500 mb-4">
+            Here is the raw data your backend sent. Copy and paste this back to the chat so we can fix the keys:
           </p>
+          <pre className="text-[11px] bg-black/40 p-3 rounded-lg overflow-x-auto font-mono text-emerald-400 max-h-[300px] overflow-y-auto whitespace-pre-wrap">
+            {JSON.stringify(dashboardData, null, 2)}
+          </pre>
         </div>
         <ChatCard />
       </main>
